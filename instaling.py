@@ -1,8 +1,14 @@
 import requests
 import time
+from datetime import datetime
 import json
 
 if __name__ == "__main__":
+
+    #otwarcie pliku z logami
+    instaling_log_file = open("instaling_log.txt", "a", encoding="utf-8")
+    instaling_log_file.write(f"{datetime.now()} Uruchomiono skrypt\n")
+
     #---queue---
     lista_kont = []
     try:
@@ -10,7 +16,7 @@ if __name__ == "__main__":
             for line in f:
                 lista_kont.append(line.strip('\n').split())
     except FileNotFoundError:
-        print("Nie znaleziono pliku z lisą kont!\n")
+        instaling_log_file.write(f"{datetime.now()} Nie odnaleziono pliku z kontami!\n")
         exit(1)
 
 
@@ -21,12 +27,15 @@ if __name__ == "__main__":
     init_request = requests.get(url, headers=headers)
     phpsessionid = init_request.cookies.get("PHPSESSID")
     if phpsessionid == None:
-        print("Brak id sesji!")
+        instaling_log_file.write(f"{datetime.now()} Brak id sesji!\n")
         exit(1)
 
 
     #---iteracja przez queue---
     for konto in lista_kont:
+
+        instaling_log_file.write(f"{datetime.now()} Sesja rozpoczęta dla użytkownika {konto[0]}\n")
+        
         #logowanie
         url = "https://instaling.pl/teacher.php?page=teacherActions"
         headers = {
@@ -50,9 +59,10 @@ if __name__ == "__main__":
         # jeżeli z jakiegoś powodu będzie inna ilość argumentów to ma pokazać błąd
         student_id = log_request.url.split("?")[-1]
         if("student_id" not in student_id):
-            print("Login request error: bad url")
+            instaling_log_file.write(f"{datetime.now()} Błąd requestu login: zły url; Użytkownik: {konto[0]}\n")
             exit(1)
         student_id = student_id.split("=")[-1]
+
 
 
         #rozpocznij sesje
@@ -70,7 +80,8 @@ if __name__ == "__main__":
         pre_sessino_request = requests.get(url, headers=headers)
 
         #iteracja przez sesje
-        while (True):
+        words = {}
+        while(True):
             url = "https://instaling.pl/ling2/server/actions/generate_next_word.php"
             headers = {
                 "connection": "keep-alive",
@@ -85,18 +96,39 @@ if __name__ == "__main__":
             question_request = requests.post(url, headers=headers, data=data)
             
             # wydobywanie pytania i tłumaczenia ze storny
-            usage_example = json.loads(question_request.text)['usage_example']
-            translation = json.loads(question_request.text)['translations']
+            # jeżeli nie ma tych wartości to znaczy, że sesja zostałą skończona
+            try:
+                usage_example = json.loads(question_request.text)['usage_example']
+                translation = json.loads(question_request.text)['translations']
+                word_id = json.loads(question_request.text)['id']
+            except KeyError:
+                instaling_log_file.write(f"{datetime.now()} Sesja zakończona dla użytkownika {konto[0]}\n")
+                break
 
-            print(usage_example, translation)
-            #TODO kwerenda do bazy danych z powyższymi danymi
-            #jeżeli rekord znaleziony to go wpisać
-            #jezeli rekord nie znaleziony to nic nie wpisywać i przejść dalej, następnie odpowiedź dodać do bazy danych
+            url = "https://instaling.pl/ling2/server/actions/save_answer.php"
+            headers = {
+                "connection": "keep-alive",
+                "cookie": f"app: app_82; PHPSESSID={phpsessionid}",
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+            }
+            data = {
+                "child_id": student_id,
+                "word_id": word_id,
+                "answer": "",
+                "version": "C65E24B29F60B1231EC23D979C9707D2"
+            }
 
-            exit(0)
-        
+            #sprawdź czy jest już w dictcie words
+            if(words.get(usage_example)):
+                #jeżeli jest to go podaj
+                data["answer"] = words.get(usage_example)
+                save_answer_request = requests.post(url, headers=headers, data=data)
+            else:
+                #jezeli nie ma to przejdź dalej i wpisz do dicta
+                save_answer_request = requests.post(url, headers=headers, data=data)
+                words[usage_example] = json.loads(save_answer_request.text)['word']
 
 
-        
-        #---zrób sesję kożystając z bazy dancyh słówek---
+    instaling_log_file.write(f"{datetime.now()} Zakończono pomyślnie\n")
+    instaling_log_file.close()
 
