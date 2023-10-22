@@ -15,7 +15,9 @@ if __name__ == "__main__":
     try:
         with open("lista_kont.txt", "r") as f:
             for line in f:
-                lista_kont.append(line.strip('\n').split())
+                konto = {}
+                konto["login"], konto["passwd"] = line.strip('\n').split()
+                lista_kont.append(konto)
     except FileNotFoundError:
         instaling_log_file.write(f"{datetime.now()} Nie odnaleziono pliku z kontami!\n")
         exit(1)
@@ -41,18 +43,18 @@ if __name__ == "__main__":
     #---iteracja przez queue---
     for konto in lista_kont:
 
-        instaling_log_file.write(f"{datetime.now()} Sesja rozpoczęta dla użytkownika {konto[0]}\n")
+        instaling_log_file.write(f"{datetime.now()} Sesja rozpoczęta dla użytkownika {konto['login']}\n")
         
         #logowanie
         url = "https://instaling.pl/teacher.php?page=teacherActions"
-        login_data = {"action": "login", "from": "", "log_email": konto[0], "log_password": konto[1]}
+        login_data = {"action": "login", "from": "", "log_email": konto["login"], "log_password": konto["passwd"]}
         login_request = session_instaling.post(url, data=login_data)
         
         # przykładowy url: "https://instaling.pl/student/pages/mainPage.php?student_id=1245553"
         # jeżeli z jakiegoś powodu będzie inna ilość argumentów to ma pokazać błąd
         student_id = login_request.url.split("?")[-1]
         if("student_id" not in student_id):
-            instaling_log_file.write(f"{datetime.now()} Błąd requestu login: zły url: {login_request.url}; Użytkownik: {konto[0]}\n")
+            instaling_log_file.write(f"{datetime.now()} Błąd requestu login: zły url: {login_request.url}; Użytkownik: {konto['login']}\n")
             exit(1)
         student_id = student_id.split("=")[-1]
 
@@ -71,13 +73,12 @@ if __name__ == "__main__":
             question_request = session_instaling.post(url, data=data)
             
             # wydobywanie pytania i tłumaczenia ze storny
-            # jeżeli nie ma tych wartości to znaczy, że sesja zostałą skończona
+            # jeżeli nie ma tych wartości to znaczy, że sesja została skończona
             try:
                 usage_example = json.loads(question_request.text)['usage_example']
-                translation = json.loads(question_request.text)['translations']
                 word_id = json.loads(question_request.text)['id']
             except KeyError:
-                instaling_log_file.write(f"{datetime.now()} Sesja zakończona dla użytkownika {konto[0]}\n")
+                instaling_log_file.write(f"{datetime.now()} Sesja zakończona dla użytkownika {konto['login']}\n")
                 break
 
             url = "https://instaling.pl/ling2/server/actions/save_answer.php"
