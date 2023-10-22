@@ -19,6 +19,14 @@ if __name__ == "__main__":
     except FileNotFoundError:
         instaling_log_file.write(f"{datetime.now()} Nie odnaleziono pliku z kontami!\n")
         exit(1)
+
+    #inicjalizacja połączenia
+    session_instaling = requests.Session()
+    url = "https://instaling.pl"
+    deafult_headers = { "content-type": "application/x-www-form-urlencoded",
+                        "connection": "keep-alive"}
+    session_instaling.headers.update(deafult_headers)
+    init_request = session_instaling.get(url)
     
     #załąduj słówka z jsona
     words = {}
@@ -34,15 +42,6 @@ if __name__ == "__main__":
     for konto in lista_kont:
 
         instaling_log_file.write(f"{datetime.now()} Sesja rozpoczęta dla użytkownika {konto[0]}\n")
-
-        #inicjalizacja połączenia
-        session_instaling = requests.Session()
-
-        url = "https://instaling.pl"
-        deafult_headers = { "content-type": "application/x-www-form-urlencoded",
-                            "connection": "keep-alive"}
-        session_instaling.headers.update(deafult_headers)
-        init_request = session_instaling.get(url)
         
         #logowanie
         url = "https://instaling.pl/teacher.php?page=teacherActions"
@@ -101,7 +100,7 @@ if __name__ == "__main__":
         
         # wyloguj się
         url = "https://instaling.pl/teacher2/logout.php"
-        logout_request = requests.get(url)
+        logout_request = session_instaling.get(url)
 
 
     #zapisz słówka do jsona
