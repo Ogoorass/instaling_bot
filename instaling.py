@@ -1,3 +1,4 @@
+#!/bin/env python3
 import requests
 import time
 from datetime import datetime
@@ -30,6 +31,15 @@ if __name__ == "__main__":
         instaling_log_file.write(f"{datetime.now()} Brak id sesji!\n")
         exit(1)
 
+    #załąduj słówka z jsona
+    words = {}
+    try:
+        with open("instaling_words.json", "r") as f:
+            words = json.loads(f.readline())
+    except FileNotFoundError:
+        instaling_log_file.write(f"{datetime.now()} Brak pliku json ze słówkami, tworzenie nowego!\n")
+        with open("instaling_words.json", "w") as f:
+            f.write(json.dumps(words))
 
     #---iteracja przez queue---
     for konto in lista_kont:
@@ -79,8 +89,8 @@ if __name__ == "__main__":
 
         pre_sessino_request = requests.get(url, headers=headers)
 
+
         #iteracja przez sesje
-        words = {}
         while(True):
             url = "https://instaling.pl/ling2/server/actions/generate_next_word.php"
             headers = {
@@ -127,7 +137,20 @@ if __name__ == "__main__":
                 #jezeli nie ma to przejdź dalej i wpisz do dicta
                 save_answer_request = requests.post(url, headers=headers, data=data)
                 words[usage_example] = json.loads(save_answer_request.text)['word']
+        
+        # wyloguj się
+        url = "https://instaling.pl/teacher2/logout.php"
+        headers = {
+            "connection": "keep-alive",
+            "cookie": f"app: app_82; PHPSESSID={phpsessionid}",
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        }
+        logout_request = requests.get(url, headers=headers)
 
+
+    #zapisz słówka do jsona
+    with open("instaling_words.json", "w") as f:
+        f.write(json.dumps(words))
 
     instaling_log_file.write(f"{datetime.now()} Zakończono pomyślnie\n")
     instaling_log_file.close()
