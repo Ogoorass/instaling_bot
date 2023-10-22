@@ -20,6 +20,7 @@ if __name__ == "__main__":
                 lista_kont.append(konto)
     except FileNotFoundError:
         instaling_log_file.write(f"{datetime.now()} Nie odnaleziono pliku z kontami!\n")
+        instaling_log_file.close()
         exit(1)
 
     #inicjalizacja połączenia
@@ -55,6 +56,7 @@ if __name__ == "__main__":
         student_id = login_request.url.split("?")[-1]
         if("student_id" not in student_id):
             instaling_log_file.write(f"{datetime.now()} Błąd requestu login: zły url: {login_request.url}; Użytkownik: {konto['login']}\n")
+            instaling_log_file.close()
             exit(1)
         student_id = student_id.split("=")[-1]
 
