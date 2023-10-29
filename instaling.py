@@ -141,6 +141,12 @@ class Bot:
 
         # zapisz złówka do jsona
         self.lock.acquire()
+        with open(self.path_to_words_json, "r") as wordsfile:
+            words_to_compare = json.loads(wordsfile.readline())
+            for word in words_to_compare:
+                if(self.words.get(word) == None):
+                    self.words[word] = words_to_compare.get(word)
+
         with open(self.path_to_words_json, "w") as wordsfile:
             wordsfile.write(json.dumps(self.words))
         self.lock.release()
@@ -153,4 +159,3 @@ class Bot:
     
     def join_subprocess(self):
         self.process.join()
-
