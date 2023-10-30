@@ -1,14 +1,13 @@
 #!/bin/env python3
 import requests
-import time
+from time import sleep, time
 from datetime import datetime
 import json
 from multiprocessing import Process, Lock
 import random
 
-def Lock_bot() -> Lock():
+def Lock_bot() -> Lock:
     return Lock()
-
 
 class Bot:
     def __init__(self, 
@@ -99,7 +98,7 @@ class Bot:
             url = "https://instaling.pl/ling2/server/actions/generate_next_word.php"
             data = {
                 "child_id": student_id,
-                "date": int(time.time())
+                "date": int(time())
             }
             question_request = session_instaling.post(url, data=data)
 
@@ -123,7 +122,7 @@ class Bot:
             }
 
             if(not self.speedrun):
-                time.sleep(random.randrange(3, 15))
+                sleep(random.randrange(3, 15))
 
             #sprawdź czy jest już w dictcie words
             if(self.words.get(usage_example)):
@@ -153,7 +152,7 @@ class Bot:
 
     def start_subprocess(self, minutes_to_wait = False):
         if(minutes_to_wait):
-            time.sleep(random.randrange(minutes_to_wait))
+            sleep(random.randrange(minutes_to_wait))
         self.process = Process(target=self.instaling_bot)
         self.process.start()
     
