@@ -1,5 +1,4 @@
-from instaling.botarray import Botarray
-from instaling.account import Account
+from instaling import Botarray, Account
 
 def main():
     # załaduj konta z pliku
