@@ -22,6 +22,8 @@ class Bot:
         self.passwd = passwd
         self.lock = lock
         self.isSpeedrun = isSpeedrun
+        self.path_to_words_json = path_to_words_json
+        self.path_to_logfile = path_to_logfile
         
         # open logfile and handle
         self.log = Log(
@@ -52,12 +54,16 @@ class Bot:
                             self.words = json.loads(wordsfile_content)
                         except json.JSONDecodeError:
                             with open(path_to_logfile, "a", encoding="utf-8") as logfile:
-                                logfile.write(f"{datetime.now()} Nie można dekodować pliku json\n")
+                                logfile.write(f"{datetime.now()} Cannot decode json file!\n")
                 self.path_to_words_json = path_to_words_json
             except FileNotFoundError:
                 with open(path_to_logfile, "a", encoding="utf-8") as logfile:
-                    logfile.write(f"{datetime.now()} Brak pliku json ze słówkami, praca bez pliku!\n")
+                    logfile.write(f"{datetime.now()} Lack of json file, creating new one!\n")
+                
                 self.words = {}
+                with open(path_to_words_json, "w", encoding="utf-8") as wordsfile:
+                    wordsfile.write(json.dumps(self.words))
+                
 
     # start instaling session
     def start(self):
@@ -90,7 +96,7 @@ class Bot:
                     raise BadAnswerError
             else:
                 # if not known - send 💀 and save answer
-                answer = self.instaling.answer("💀")
+                answer = self.instaling.send_answer("💀")
                 self.words[usage_example] = answer.word
 
         # zapisz złówka do jsona
