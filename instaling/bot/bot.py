@@ -15,8 +15,8 @@ class Bot:
     login, 
     passwd, 
     lock = nullcontext(), 
-    path_to_words_json = None, 
-    path_to_logfile = None,
+    path_to_words_json = "words.json", 
+    path_to_logfile = "log.txt",
     isSpeedrun = False):
         self.login = login
         self.passwd = passwd
