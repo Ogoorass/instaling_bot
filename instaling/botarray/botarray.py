@@ -5,13 +5,14 @@ class Botarray:
     def __init__(self, 
         path_to_words_json = None, 
         path_to_logfile = None,
-        speedrun = False):
+        isSpeedrun = False):
 
         self.path_to_words_json = path_to_words_json
         self.path_to_logfile = path_to_logfile
         self.lock = Lock()
-        self.speedrun = speedrun
+        self.isSpeedrun = isSpeedrun
 
+        # initalize array
         self.botarray = []
 
     # append the botarray
@@ -23,7 +24,7 @@ class Botarray:
             lock=self.lock,
             path_to_words_json=self.path_to_words_json,
             path_to_logfile=self.path_to_logfile,
-            speedrun=self.speedrun
+            isSpeedrun=self.isSpeedrun
         ))
 
     # start all the sessions simultaneously and wait for them
