@@ -4,6 +4,7 @@ from sys import platform
 
 def main():
 
+    # for different systems
     HOME = os.environ['HOME'] + "/" if platform in ["linux", "linux2"] else ""
 
     # load accounts from the file
