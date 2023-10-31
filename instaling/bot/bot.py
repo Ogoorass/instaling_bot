@@ -93,6 +93,7 @@ class Bot:
                 if not answer.isCorrect:
                     #log
                     self.log.bad_answer()
+                    self.instaling.logout()
                     raise BadAnswerError
             else:
                 # if not known - send 💀 and save answer
