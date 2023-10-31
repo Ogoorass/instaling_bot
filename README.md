@@ -13,6 +13,11 @@ Bot(login="xx213769", passwd="jp2gmd").start()
 
 If not provided `path_to_words_json` it creates in run direcory file `words.json`, where it stores all the words used in sesson for further usage. Similarly the `path_to_logfile` if not provided it creates `log.txt`, where will be all logs.
 
+By default it imitates typing - waits a few seconds before sending an answer, but you can tur it off by addig `isSpeedrun = True`.
+```python
+Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True)
+```
+
 ## More complex usage
 
 Example of more complex usage is in `main.py` file in root direcory.
