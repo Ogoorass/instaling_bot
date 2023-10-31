@@ -1,2 +1,2 @@
 # instaling_bot
-Automaticly run installing
+Automatically run Instaling
