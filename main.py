@@ -1,4 +1,5 @@
 from instaling import Botarray, Account
+import os
 
 def main():
     # załaduj konta z pliku
@@ -12,10 +13,11 @@ def main():
         print("Brak pliku z kontami!")
         exit(1)
 
+    HOME = os.environ['HOME']
 
     lista_botów = Botarray(
-        path_to_logfile="log.txt",
-        path_to_words_json="instaling_words.json"
+        path_to_logfile=f"{HOME}/log.txt",
+        path_to_words_json=f"{HOME}/instaling_words.json"
     )
 
     for konto in lista_kont:
