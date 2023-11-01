@@ -7,7 +7,7 @@ import random
 
 from .instaling import Instaling
 from .answer import Answer
-from .error import BadAnswerError, BadStudentIdUrlError, SessionEnd
+from .error import BadAnswerError, SessionEnd, SendAnswerError, LoginError
 from .log import Log
 
 class Bot:
@@ -38,8 +38,8 @@ class Bot:
                 login= self.login,
                 passwd= self.passwd
             )
-        except BadStudentIdUrlError:
-            self.log.bad_student_id_url()
+        except LoginError:
+            self.log.login_error()
             exit(1)
         
         # open words in json 
@@ -80,6 +80,7 @@ class Bot:
             except SessionEnd:
                 # log 
                 self.log.session_completed()
+                self.instaling.logout()
                 break
 
             # imitate typing... 
@@ -89,15 +90,25 @@ class Bot:
             # check if word is known
             if usage_example in self.words:
                 # if known - send it
-                answer = self.instaling.send_answer(self.words.get(usage_example))
+                try:
+                    answer = self.instaling.send_answer(self.words.get(usage_example))
+                except SendAnswerError:
+                    # exit if something is wrong
+                    self.log.send_answer_error()
+                    exit(1)
+                # if something is messed up raise an error
                 if not answer.isCorrect:
                     #log
                     self.log.bad_answer()
-                    self.instaling.logout()
                     raise BadAnswerError
             else:
                 # if not known - send 💀 and save answer
-                answer = self.instaling.send_answer("💀")
+                try:
+                    answer = self.instaling.send_answer("💀")
+                except SendAnswerError:
+                    # exit if something is wrong
+                    self.log.send_answer_error()
+                    exit(1)
                 self.words[usage_example] = answer.word
 
         # zapisz złówka do jsona

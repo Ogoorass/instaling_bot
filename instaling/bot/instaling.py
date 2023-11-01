@@ -4,7 +4,7 @@ import json
 
 from .data import Url, Header, Data
 from .utils import extract_student_id_from_url
-from .error import SessionEnd
+from .error import SessionEnd, SendAnswerError, BadStudentIdUrlError, LoginError
 from .answer import Answer
 
 class Instaling:
@@ -25,8 +25,10 @@ class Instaling:
         login_request = self.session.post(Url.login, data=Data.login(login=self.login, passwd=self.passwd))
 
         # get student id from url, can raise an BadStudentIdUrlError
-        self.student_id = extract_student_id_from_url(login_request.url)
-
+        try:
+            self.student_id = extract_student_id_from_url(login_request.url)
+        except BadStudentIdUrlError:
+            raise LoginError
 
     def generate_new_word(self) -> str:
         # request for new word and return it it
@@ -62,8 +64,10 @@ class Instaling:
                 word_id= self.word_id
             )
         )
-
-        answer_data = json.loads(answer_request.text)
+        try:
+            answer_data = json.loads(answer_request.text)
+        except json.JSONDecodeError:
+            raise SendAnswerError
 
         return Answer(
             word= answer_data['word'],

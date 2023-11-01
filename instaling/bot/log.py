@@ -21,6 +21,10 @@ class Log:
         with open(self.path_to_logfile, 'a') as logfile, self.lock:
             logfile.write(f"{datetime.now()} Bad answer in json for user {self.login}\n")
     
-    def bad_student_id_url(self):
+    def login_error(self):
         with open(self.path_to_logfile, 'a') as logfile, self.lock:
-            logfile.write(f"{datetime.now()} Bad student id url in json for user {self.login}\n")
+            logfile.write(f"{datetime.now()} Error when logging in as {self.login}\n")
+
+    def send_answer_error(self):
+        with open(self.path_to_logfile, 'a') as logfile, self.lock:
+            logfile.write(f"{datetime.now()} Send answer error for user {self.login}!\n")
