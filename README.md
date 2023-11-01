@@ -1,5 +1,5 @@
 # instaling_bot
-Automatically run Instaling
+Python library for automatically running Instaling sessions made with `requests` module.
 
 ## Simple usage
 
