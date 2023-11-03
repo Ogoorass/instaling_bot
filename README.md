@@ -11,7 +11,7 @@ from instaling import Bot
 Bot(login="xx213769", passwd="jp2gmd").start()
 ```
 
-If not provided `path_to_words_json` it creates in run direcory file `words.json`, where it stores all the words used in sesson for further usage. Similarly the `path_to_logfile` if not provided it creates `log.txt`, where will be all logs.
+If not provided `path_to_words_json` it creates in run direcory file `words.json`, where it stores all the words used in sesson for further usage. When the `path_to_logfile` is not provided it will print all debug logs to stdout.
 
 By default it imitates typing - waits a few seconds before sending an answer, but you can turn it off by adding `isSpeedrun=True`.
 ```python
@@ -20,7 +20,7 @@ Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True)
 
 ## More complex usage
 
-Example of more complex usage is in `main.py` file in root direcory.
+Example of more complex usage is in `main.py` file in the root direcory.
 
 ```python
 from instaling import Botarray, Account
