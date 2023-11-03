@@ -1,11 +1,12 @@
 from ..bot import Bot
-from multiprocessing import Process, Lock
+from threading import Thread, Lock
 
 class Botarray:
     def __init__(self, 
         path_to_words_json = None, 
         path_to_logfile = None,
         isSpeedrun = False):
+
 
         self.path_to_words_json = path_to_words_json
         self.path_to_logfile = path_to_logfile
@@ -30,7 +31,7 @@ class Botarray:
     # start all the sessions simultaneously and wait for them
     def start(self):
         for bot in self.botarray:
-            bot.proc = Process(target=bot.start)
+            bot.proc = Thread(target=bot.start)
             bot.proc.start()
         
         for bot in self.botarray:
