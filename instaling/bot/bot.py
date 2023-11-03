@@ -4,6 +4,7 @@ import json
 import requests
 from time import sleep, time
 import random
+import logging
 
 from .instaling import Instaling
 from .answer import Answer
@@ -16,7 +17,7 @@ class Bot:
     passwd, 
     lock = nullcontext(), 
     path_to_words_json = "words.json", 
-    path_to_logfile = "log.txt",
+    path_to_logfile = None,
     isSpeedrun = False):
         self.login = login
         self.passwd = passwd
@@ -25,12 +26,21 @@ class Bot:
         self.path_to_words_json = path_to_words_json
         self.path_to_logfile = path_to_logfile
         
-        # open logfile and handle
-        self.log = Log(
-            path_to_logfile= path_to_logfile,
-            login= login,
-            lock= lock
-        )
+
+
+        if path_to_logfile == None:
+            # debug loggin config
+            logging.basicConfig(
+                level=logging.DEBUG, 
+                format='%(asctime)s - %(levelname)s - %(message)s')
+        else:
+            # info debug confing
+            logging.basicConfig(
+                filename=path_to_logfile, 
+                level=logging.INFO, 
+                format='%(asctime)s - %(levelname)s - %(message)s')
+
+
 
         # log in
         try:
@@ -39,7 +49,7 @@ class Bot:
                 passwd= self.passwd
             )
         except LoginError:
-            self.log.login_error()
+            logging.critical(f"Error when logging in as {self.login}")
             exit(1)
         
         # open words in json 
@@ -53,12 +63,11 @@ class Bot:
                         try:
                             self.words = json.loads(wordsfile_content)
                         except json.JSONDecodeError:
-                            with open(path_to_logfile, "a", encoding="utf-8") as logfile:
-                                logfile.write(f"{datetime.now()} Cannot decode json file!\n")
+                            logging.warning("Cannot decode json file, ignoring content!")
+
                 self.path_to_words_json = path_to_words_json
             except FileNotFoundError:
-                with open(path_to_logfile, "a", encoding="utf-8") as logfile:
-                    logfile.write(f"{datetime.now()} Lack of json file, creating new one!\n")
+                logging.warning("Lack of json file, creating new one!")
                 
                 self.words = {}
                 with open(path_to_words_json, "w", encoding="utf-8") as wordsfile:
@@ -69,7 +78,8 @@ class Bot:
     def start(self):
 
         # log 
-        self.log.session_started()
+        #self.log.session_started()
+        logging.info(f"Session started for user {self.login}")
 
         #iteracja przez sesje
         while(True):
@@ -77,37 +87,49 @@ class Bot:
             # request for next word
             try:
                 usage_example = self.instaling.generate_new_word()
+                logging.debug(f"usage example: {usage_example}")
             except SessionEnd:
                 # log 
-                self.log.session_completed()
+                #self.log.session_completed()
+                logging.info(f"Session completed for user {self.login}")
                 self.instaling.logout()
                 break
 
             # imitate typing... 
             if not self.isSpeedrun:
-                sleep(random.randrange(3, 15))
+                time_typing_imaginary = random.randrange(3, 15)
+                logging.debug(f"Typing (waiting) for {time_typing_imaginary} seconds")
+                sleep(time_typing_imaginary)
 
             # check if word is known
             if usage_example in self.words:
+
+                logging.debug(f"usage example is known, answer - \'{self.words.get(usage_example)}\'")
                 # if known - send it
                 try:
                     answer = self.instaling.send_answer(self.words.get(usage_example))
                 except SendAnswerError:
                     # exit if something is wrong
-                    self.log.send_answer_error()
+                    #self.log.send_answer_error()
+                    logging.critical(f"Error while sending an answer request for user {self.login}")
                     exit(1)
                 # if something is messed up raise an error
                 if not answer.isCorrect:
                     #log
-                    self.log.bad_answer()
+                    #self.log.bad_answer()
+                    logging.warning(f"Bad answer in json for user {self.login}")
                     raise BadAnswerError
             else:
+
+                logging.debug("usage example is not known")
                 # if not known - send 💀 and save answer
                 try:
                     answer = self.instaling.send_answer("💀")
+                    logging.debug(f"the answer is \'{answer.word}\'")
                 except SendAnswerError:
                     # exit if something is wrong
-                    self.log.send_answer_error()
+                    #self.log.send_answer_error()
+                    logging.critical(f"Error while sending an answer request for user {self.login}")
                     exit(1)
                 self.words[usage_example] = answer.word
 
