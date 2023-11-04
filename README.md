@@ -20,7 +20,7 @@ Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True)
 
 The start method accepts the `delay` argument. By doing that, execution of session will wait given amount of minutes. By default it is 0.
 ```python
-Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True, dealy=13)
+Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True).start(dealy=13)
 ```
 
 
