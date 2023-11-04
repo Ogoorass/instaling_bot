@@ -37,7 +37,7 @@ def main():
         )
     
     # start sessions
-    botarray.start()
+    botarray.start_with_random_delay()
 
 
 if __name__ == "__main__":

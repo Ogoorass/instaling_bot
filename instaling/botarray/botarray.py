@@ -1,4 +1,5 @@
 from ..bot import Bot
+from random import randrange
 from threading import Thread, Lock
 
 class Botarray:
@@ -32,6 +33,16 @@ class Botarray:
     def start(self):
         for bot in self.botarray:
             bot.proc = Thread(target=bot.start)
+            bot.proc.start()
+        
+        for bot in self.botarray:
+            bot.proc.join()
+
+
+    # start all the sessions with different random delay and wait for them
+    def start_with_random_delay(self, dmin=0, dmax=60):
+        for bot in self.botarray:
+            bot.proc = Thread(target=bot.start, kwargs={'delay': randrange(dmin, dmax)})
             bot.proc.start()
         
         for bot in self.botarray:

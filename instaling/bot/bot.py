@@ -24,6 +24,8 @@ class Bot:
         self.isSpeedrun = isSpeedrun
         self.path_to_words_json = path_to_words_json
         self.path_to_logfile = path_to_logfile
+
+        self.words = {}
         
 
 
@@ -54,27 +56,27 @@ class Bot:
         # open words in json 
         with self.lock:
             try:
-                with open(path_to_words_json, "r") as wordsfile:
-                    wordsfile_content = wordsfile.readline()
-                    if wordsfile_content == "":                          # empty file causes error in json decoding
-                        self.words = {}
-                    else:
-                        try:
-                            self.words = json.loads(wordsfile_content)
-                        except json.JSONDecodeError:
-                            logging.warning("Cannot decode json file, ignoring content!")
+                with open(self.path_to_words_json, "r", encoding="utf-8") as wordsfile:
+                    try:
+                        self.words = json.load(wordsfile)
+                        logging.debug(f"json file content: {self.words}")
+                    except json.JSONDecodeError:
+                        logging.warning("Cannot decode json file, ignoring content!")
 
-                self.path_to_words_json = path_to_words_json
             except FileNotFoundError:
-                logging.warning("Lack of json file, creating new one!")
+                logging.warning(f"No such file \'{self.path_to_words_json}\', ignoring content!")
                 
-                self.words = {}
-                with open(path_to_words_json, "w", encoding="utf-8") as wordsfile:
-                    wordsfile.write(json.dumps(self.words))
+                with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile:
+                    json.dump({}, wordsfile)
                 
 
     # start instaling session
-    def start(self):
+    def start(self, 
+        delay=0     # minutes to delay executing the session
+    ):
+
+        logging.debug(f"delaying {delay} minutes")
+        sleep(delay * 60) # minutes to seconds convertion
 
         # log 
         #self.log.session_started()
@@ -85,7 +87,7 @@ class Bot:
 
             # request for next word
             try:
-                usage_example = self.instaling.generate_new_word()
+                usage_example = self.instaling.generate_next_word()
                 logging.debug(f"usage example: {usage_example}")
             except SessionEnd:
                 # log 
@@ -134,10 +136,10 @@ class Bot:
 
         # zapisz złówka do jsona
         with self.lock:
-            with open(self.path_to_words_json, "r") as wordsfile:
-                words_to_compare = json.loads(wordsfile.readline())
+            with open(self.path_to_words_json, "r", encoding="utf-8") as wordsfile:
+                words_to_compare = json.load(wordsfile)
                 for word in words_to_compare:
                     if self.words.get(word) == None:
                         self.words[word] = words_to_compare.get(word)
-            with open(self.path_to_words_json, "w") as wordsfile:
-                wordsfile.write(json.dumps(self.words))
+            with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile:
+                json.dump(self.words, wordsfile)
