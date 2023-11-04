@@ -9,7 +9,6 @@ import logging
 from .instaling import Instaling
 from .answer import Answer
 from .error import BadAnswerError, SessionEnd, SendAnswerError, LoginError
-from .log import Log
 
 class Bot:
     def __init__(self, 
