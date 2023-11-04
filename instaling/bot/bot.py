@@ -75,7 +75,7 @@ class Bot:
         delay=0     # minutes to delay executing the session
     ):
 
-        logging.info(f"delaying {delay} minutes for user {self.user}")
+        logging.info(f"delaying {delay} minutes for user {self.login}")
         sleep(delay * 60) # minutes to seconds convertion
 
         # log 
