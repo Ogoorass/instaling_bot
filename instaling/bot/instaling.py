@@ -30,8 +30,8 @@ class Instaling:
         except BadStudentIdUrlError:
             raise LoginError
 
-    def generate_new_word(self) -> str:
-        # request for new word and return it it
+    def generate_next_word(self) -> str:
+        # request for next word and return it it
         #request o kolejne słówko, użwany także do zakończenia sesji
         next_word_request = self.session.post(
             Url.next_word, 
