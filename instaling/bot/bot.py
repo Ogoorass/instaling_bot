@@ -33,14 +33,13 @@ class Bot:
             # debug loggin config
             logging.basicConfig(
                 level=logging.DEBUG, 
-                format='%(asctime)s - %(levelname)s - %(message)s')
+                format=f'%(asctime)s - %(levelname)s - {self.login} - %(message)s')
         else:
             # info debug confing
             logging.basicConfig(
                 filename=path_to_logfile, 
                 level=logging.INFO, 
-                format='%(asctime)s - %(levelname)s - %(message)s')
-
+                format=f'%(asctime)s - %(levelname)s - {self.login} - %(message)s')
 
 
         # log in
@@ -50,7 +49,7 @@ class Bot:
                 passwd= self.passwd
             )
         except LoginError:
-            logging.critical(f"Error when logging in as {self.login}")
+            logging.critical(f"Error when logging in!")
             exit(1)
         
         # open words in json 
@@ -75,12 +74,12 @@ class Bot:
         delay=0     # minutes to delay executing the session
     ):
 
-        logging.info(f"delaying {delay} minutes for user {self.login}")
+        logging.info(f"delaying {delay} minutes")
         sleep(delay * 60) # minutes to seconds convertion
 
         # log 
         #self.log.session_started()
-        logging.info(f"Session started for user {self.login}")
+        logging.info(f"Session started!")
 
         #iteracja przez sesje
         while(True):
@@ -92,7 +91,7 @@ class Bot:
             except SessionEnd:
                 # log 
                 #self.log.session_completed()
-                logging.info(f"Session completed for user {self.login}")
+                logging.info(f"Session completed!")
                 self.instaling.logout()
                 break
 
@@ -112,13 +111,13 @@ class Bot:
                 except SendAnswerError:
                     # exit if something is wrong
                     #self.log.send_answer_error()
-                    logging.critical(f"Error while sending an answer request for user {self.login}")
+                    logging.critical(f"Error while sending an answer request")
                     exit(1)
                 # if something is messed up raise an error
                 if not answer.isCorrect:
                     #log
                     #self.log.bad_answer()
-                    logging.warning(f"Bad answer in json for user {self.login}")
+                    logging.warning(f"Bad answer in json")
                     raise BadAnswerError
             else:
 
@@ -130,16 +129,27 @@ class Bot:
                 except SendAnswerError:
                     # exit if something is wrong
                     #self.log.send_answer_error()
-                    logging.critical(f"Error while sending an answer request for user {self.login}")
+                    logging.critical(f"Error while sending an answer request")
                     exit(1)
                 self.words[usage_example] = answer.word
 
         # zapisz złówka do jsona
-        with self.lock:
-            with open(self.path_to_words_json, "r", encoding="utf-8") as wordsfile:
+        try:
+            with open(self.path_to_words_json, "r", encoding="utf-8") as wordsfile, self.lock:
                 words_to_compare = json.load(wordsfile)
-                for word in words_to_compare:
-                    if self.words.get(word) == None:
-                        self.words[word] = words_to_compare.get(word)
-            with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile:
+
+            for word in words_to_compare:
+                if self.words.get(word) == None:
+                    logging.debug(f"word {word} not known, adding to json")
+                    self.words[word] = words_to_compare.get(word)
+        
+        except FileNotFoundError:
+            logging.warning(f"file {path_to_words_json} deleted during the execution, creating new one")
+
+        except json.JSONDecodeError:
+            logging.warning(f"file {path_to_words_json} corruption during the execution, ignoring content and overwriting")
+
+        finally:
+            with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile, self.lock:
                 json.dump(self.words, wordsfile)
+
