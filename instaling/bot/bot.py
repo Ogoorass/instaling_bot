@@ -5,6 +5,7 @@ import requests
 from time import sleep, time
 import random
 import logging
+import sys
 
 from .instaling import Instaling
 from .answer import Answer
@@ -27,20 +28,23 @@ class Bot:
 
         self.words = {}
         
+        self.logger = logging.getLogger(self.login)
+        logging_formeter = logging.Formatter(f'%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 
-
-        if path_to_logfile == None:
-            # debug loggin config
-            logging.basicConfig(
-                level=logging.DEBUG, 
-                format=f'%(asctime)s - %(levelname)s - {self.login} - %(message)s')
+        # file handler if specified path, otherwise stream handler - print to stdout
+        if path_to_logfile:
+            logging_handler = logging.FileHandler(path_to_logfile) 
+            logging_handler.setLevel(logging.INFO)
+            self.logger.setLevel(logging.INFO)
         else:
-            # info debug confing
-            logging.basicConfig(
-                filename=path_to_logfile, 
-                level=logging.INFO, 
-                format=f'%(asctime)s - %(levelname)s - {self.login} - %(message)s')
+            logging_handler = logging.StreamHandler(sys.stdout)
+            logging_handler.setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
 
+        logging_handler.setFormatter(logging_formeter)
+
+        self.logger.addHandler(logging_handler)
+  
 
         # log in
         try:
@@ -49,7 +53,7 @@ class Bot:
                 passwd= self.passwd
             )
         except LoginError:
-            logging.critical(f"Error when logging in!")
+            self.logger.critical(f"Error when logging in!")
             exit(1)
         
         # open words in json 
@@ -58,12 +62,12 @@ class Bot:
                 with open(self.path_to_words_json, "r", encoding="utf-8") as wordsfile:
                     try:
                         self.words = json.load(wordsfile)
-                        logging.debug(f"json file content: {self.words}")
+                        self.logger.debug(f"json file content: {self.words}")
                     except json.JSONDecodeError:
-                        logging.warning("Cannot decode json file, ignoring content!")
+                        self.logger.warning("Cannot decode json file, ignoring content!")
 
             except FileNotFoundError:
-                logging.warning(f"No such file \'{self.path_to_words_json}\', ignoring content!")
+                self.logger.warning(f"No such file \'{self.path_to_words_json}\', ignoring content!")
                 
                 with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile:
                     json.dump({}, wordsfile)
@@ -74,12 +78,12 @@ class Bot:
         delay=0     # minutes to delay executing the session
     ):
 
-        logging.info(f"delaying {delay} minutes")
+        self.logger.info(f"delaying {delay} minutes")
         sleep(delay * 60) # minutes to seconds convertion
 
         # log 
         #self.log.session_started()
-        logging.info(f"Session started!")
+        self.logger.info(f"Session started!")
 
         #iteracja przez sesje
         while(True):
@@ -87,49 +91,49 @@ class Bot:
             # request for next word
             try:
                 usage_example = self.instaling.generate_next_word()
-                logging.debug(f"usage example: {usage_example}")
+                self.logger.debug(f"usage example: {usage_example}")
             except SessionEnd:
                 # log 
                 #self.log.session_completed()
-                logging.info(f"Session completed!")
+                self.logger.info(f"Session completed!")
                 self.instaling.logout()
                 break
 
             # imitate typing... 
             if not self.isSpeedrun:
                 time_typing_imaginary = random.randrange(3, 15)
-                logging.debug(f"Typing (waiting) for {time_typing_imaginary} seconds")
+                self.logger.debug(f"Typing (waiting) for {time_typing_imaginary} seconds")
                 sleep(time_typing_imaginary)
 
             # check if word is known
             if usage_example in self.words:
 
-                logging.debug(f"usage example is known, answer - \'{self.words.get(usage_example)}\'")
+                self.logger.debug(f"usage example is known, answer - \'{self.words.get(usage_example)}\'")
                 # if known - send it
                 try:
                     answer = self.instaling.send_answer(self.words.get(usage_example))
                 except SendAnswerError:
                     # exit if something is wrong
                     #self.log.send_answer_error()
-                    logging.critical(f"Error while sending an answer request")
+                    self.logger.critical(f"Error while sending an answer request")
                     exit(1)
                 # if something is messed up raise an error
                 if not answer.isCorrect:
                     #log
                     #self.log.bad_answer()
-                    logging.warning(f"Bad answer in json")
+                    self.logger.warning(f"Bad answer in json")
                     raise BadAnswerError
             else:
 
-                logging.debug("usage example is not known")
+                self.logger.debug("usage example is not known")
                 # if not known - send 💀 and save answer
                 try:
                     answer = self.instaling.send_answer("💀")
-                    logging.debug(f"the answer is \'{answer.word}\'")
+                    self.logger.debug(f"the answer is \'{answer.word}\'")
                 except SendAnswerError:
                     # exit if something is wrong
                     #self.log.send_answer_error()
-                    logging.critical(f"Error while sending an answer request")
+                    self.logger.critical(f"Error while sending an answer request")
                     exit(1)
                 self.words[usage_example] = answer.word
 
@@ -140,14 +144,14 @@ class Bot:
 
             for word in words_to_compare:
                 if self.words.get(word) == None:
-                    logging.debug(f"word {word} not known, adding to json")
+                    self.logger.debug(f"word {word} not known, adding to json")
                     self.words[word] = words_to_compare.get(word)
         
         except FileNotFoundError:
-            logging.warning(f"file {path_to_words_json} deleted during the execution, creating new one")
+            self.logger.warning(f"file {path_to_words_json} deleted during the execution, creating new one")
 
         except json.JSONDecodeError:
-            logging.warning(f"file {path_to_words_json} corruption during the execution, ignoring content and overwriting")
+            self.logger.warning(f"file {path_to_words_json} corruption during the execution, ignoring content and overwriting")
 
         finally:
             with open(self.path_to_words_json, "w", encoding="utf-8") as wordsfile, self.lock:
