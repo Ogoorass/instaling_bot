@@ -25,8 +25,7 @@ def main():
     # setup botarray
     botarray = Botarray(
         path_to_logfile=f"{HOME}log.txt",
-        path_to_words_json=f"{HOME}words.json",
-        isSpeedrun= True
+        path_to_words_json=f"{HOME}words.json"
     )
 
     # fill botarray
