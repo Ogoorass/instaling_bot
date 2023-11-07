@@ -48,7 +48,7 @@ botarray.append(login="xx696969", passwd="czacha")
 botarray.start_with_random_delay(dmin=6, dmax=9)
 ```
 
-If you want to start all sessions in at the same time, you can call the plain `start` method.
+If you want to start all sessions at the same time, you can call the plain `start` method.
 ```python
 botarray.start()
 ```
