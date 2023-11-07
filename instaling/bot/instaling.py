@@ -7,10 +7,9 @@ from .utils import extract_student_id_from_url
 from .error import SessionEnd, SendAnswerError, BadStudentIdUrlError, LoginError
 from .answer import Answer
 
+
 class Instaling:
-    def __init__(self,
-        login,
-        passwd):
+    def __init__(self, login, passwd):
         self.login = login
         self.passwd = passwd
 
@@ -20,9 +19,11 @@ class Instaling:
 
         # inicjalizacja połączenia
         init_request = self.session.get(Url.init)
-        
+
         # logowanie
-        login_request = self.session.post(Url.login, data=Data.login(login=self.login, passwd=self.passwd))
+        login_request = self.session.post(
+            Url.login, data=Data.login(login=self.login, passwd=self.passwd)
+        )
 
         # get student id from url, can raise an BadStudentIdUrlError
         try:
@@ -32,48 +33,39 @@ class Instaling:
 
     def generate_next_word(self) -> str:
         # request for next word and return it it
-        #request o kolejne słówko, użwany także do zakończenia sesji
+        # request o kolejne słówko, użwany także do zakończenia sesji
         next_word_request = self.session.post(
-            Url.next_word, 
-            data= Data.next_word(
-                student_id=self.student_id, 
-                time=int(time())
-            )
+            Url.next_word,
+            data=Data.next_word(student_id=self.student_id, time=int(time())),
         )
-
 
         # wydobywanie pytania i tłumaczenia ze storny
         # jeżeli nie ma tych wartości to znaczy, że sesja została skończona
         # raise error (e.g. SessionEndError) when session is finished
         try:
-            usage_example = json.loads(next_word_request.text)['usage_example']
-            self.word_id = json.loads(next_word_request.text)['id']
+            usage_example = json.loads(next_word_request.text)["usage_example"]
+            self.word_id = json.loads(next_word_request.text)["id"]
         except KeyError:
             raise SessionEnd
-        
+
         return usage_example
 
     def send_answer(self, answer) -> Answer:
-        
+
         # send answer
         answer_request = self.session.post(
-            Url.answer, 
+            Url.answer,
             data=Data.answer(
-                answer= answer,
-                student_id= self.student_id,
-                word_id= self.word_id
-            )
+                answer=answer, student_id=self.student_id, word_id=self.word_id
+            ),
         )
         try:
             answer_data = json.loads(answer_request.text)
         except json.JSONDecodeError:
             raise SendAnswerError
 
-        return Answer(
-            word= answer_data['word'],
-            isCorrect= answer_data['grade']
-        )
-    
+        return Answer(word=answer_data["word"], isCorrect=answer_data["grade"])
+
     def logout(self):
         # wyloguj się
         logout_request = self.session.get(Url.logout)
