@@ -1,9 +1,9 @@
 # instaling_bot
-Python library for automatically running Instaling sessions made with `requests` module.
+Python library for automatically running Instaling sessions, made with `requests` module.
 
 ## Simple usage
 
-To run Instaling session just make a `Bot` object and provide `login` and `password`, then call the `start()` method.
+To run an Instaling session, simply create a `Bot` instance, provide `login` and `passwd`, then call the `start` method.
 
 ```python
 from instaling import Bot
@@ -11,90 +11,52 @@ from instaling import Bot
 Bot(login="xx213769", passwd="jp2gmd").start()
 ```
 
-If not provided `path_to_words_json` it creates in run direcory file `words.json`, where it stores all the words used in sesson for further usage. When the `path_to_logfile` is not provided it will print all debug logs to stdout.
+By default, it creates a `words.json` file in the run directory, where it stores all the words used in the session for further usage. This can be overriden using the `path_to_words_json` argument in the `Bot` constructor.
+If the `path_to_logfile` argument is not provided, all debug logs are printed to stdout.
 
-By default it imitates typing - waits a few seconds before sending an answer, but you can turn it off by adding `isSpeedrun=True`.
+By default it imitates typing - waits a few seconds before sending an answer, but you can turn it off with the `isSpeedrun` argument.
 ```python
-Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True)
+bot = Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True)
 ```
 
-The start method accepts the `delay` argument. By doing that, execution of session will wait given amount of minutes. By default it is 0.
+The `start` method accepts a `delay` argument. This is an optional time in minutes the bot will wait before starting the session. Useful for further human imitation when automating.
 ```python
-Bot(login="xx213769", passwd="jp2gmd", isSpeedrun=True).start(delay=13)
+bot.start(delay=13)
 ```
-
 
 ## More complex usage
 
 Example of more complex usage is in `main.py` file in the root direcory.
 
-```python
-from instaling import Botarray, Account
-import os
-from sys import platform
+https://github.com/Ogoorass/instaling_bot/blob/3162e6d84af26f278842e53ee5bfe2787a0e292a/main.py#L1-L43
 
-def main():
+The `Botarray` class is used to easily run Instaling sessions in bulk.
 
-    # for different systems
-    HOME = os.environ['HOME'] + "/" if platform in ["linux", "linux2"] else ""
-
-    # load accounts from the file
-    accounts = []
-    try:
-        with open(f"{HOME}accounts.txt", "r") as f:
-            for line in f:
-                try:
-                    login, passwd = line.strip('\n').split()
-                except ValueError:
-                    print("Bad format of \"accounts.txt\"!")
-                    exit(1)
-                accounts.append(Account(login=login, passwd=passwd))
-    except FileNotFoundError:
-        print("Lack of account file!")
-        exit(1)
-
-    # setup botarray
-    botarray = Botarray(
-        path_to_logfile=f"{HOME}log.txt",
-        path_to_words_json=f"{HOME}words.json",
-        isSpeedrun= True
-    )
-
-    # fill botarray
-    for account in accounts:
-        botarray.append(
-            login=account.login,
-            passwd=account.passwd
-        )
-    
-    # start sessions
-    botarray.start_with_random_delay()
-
-
-if __name__ == "__main__":
-    main()
-```
-
-The `Botarray` class is made to easly create multiple Instaling sessions.
-
-For initialisation you can provide `path_to_logfile` and `path_to_words_json`. Then by calling the `append()` method and specifying `login` and `password` you can add another accounts to the array. Finally by calling the `start_with_random_delay()` method all the elements of the botarray are simultaneously run and waited for, but every each of them starts executing session with random delay. By default it is 0 to 60min, but you can specify `dmin` and `dmax`. 
+Same as in `Bot`, `path_to_words_json`, `path_to_logfile` and `isSpeedrun` may be provided to the `Botarray` constructor. The `append` method is used to add user accounts to the array. By calling the `start_with_random_delay` method, all elements of the botarray are simultaneously run and waited for, but each of them starts executing with a random delay. By default it is 0 to 60 minutes, but you can specify `dmin` and `dmax`.
 
 ```python
-botarray.start_with_random_delay(dmin=10, dmax=20)
+from instaling.botarray import Botarray
+
+botarray = Botarray(isSpeedrun=True)
+
+# add accounts
+botarray.append(login="xx213769", passwd="jp2gmd")
+...
+botarray.append(login="xx696969", passwd="czacha")
+
+# start sessions
+botarray.start_with_random_delay(dmin=6, dmax=9)
 ```
 
-If you want to start all the sessions in the exact moment you can call the `start()` method
+If you want to start all sessions at the same time, you can call the plain `start` method.
 ```python
 botarray.start()
 ```
 
-
-The `Account` class is for convenience. 
+An `Account` class is provided for convenience. 
 ```python
 class Account:
     def __init__(self, login, passwd):
         self.login = login
         self.passwd = passwd
 ```
-
-
