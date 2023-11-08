@@ -28,7 +28,7 @@ bot.start(delay=13)
 
 Example of more complex usage is in `main.py` file in the root direcory.
 
-https://github.com/Ogoorass/instaling_bot/blob/main/main.py
+https://github.com/Ogoorass/instaling_bot/blob/ca2efb2f880511d8f899f0689626c7112cee2218/main.py
 
 The `Botarray` class is used to easily run Instaling sessions in bulk.
 
