@@ -2,10 +2,11 @@ from instaling import Botarray, Account
 import os
 from sys import platform
 
+
 def main():
 
     # for different systems
-    HOME = os.environ['HOME'] + "/" if platform in ["linux", "linux2"] else ""
+    HOME = os.environ["HOME"] + "/" if platform in ["linux", "linux2"] else ""
 
     # load accounts from the file
     accounts = []
@@ -13,9 +14,9 @@ def main():
         with open(f"{HOME}accounts.txt", "r") as f:
             for line in f:
                 try:
-                    login, passwd = line.strip('\n').split()
+                    login, passwd = line.strip("\n").split()
                 except ValueError:
-                    print("Bad format of \"accounts.txt\"!")
+                    print('Bad format of "accounts.txt"!')
                     exit(1)
                 accounts.append(Account(login=login, passwd=passwd))
     except FileNotFoundError:
@@ -24,17 +25,13 @@ def main():
 
     # setup botarray
     botarray = Botarray(
-        path_to_logfile=f"{HOME}log.txt",
-        path_to_words_json=f"{HOME}words.json"
+        path_to_logfile=f"{HOME}log.txt", path_to_words_json=f"{HOME}words.json"
     )
 
     # fill botarray
     for account in accounts:
-        botarray.append(
-            login=account.login,
-            passwd=account.passwd
-        )
-    
+        botarray.append(login=account.login, passwd=account.passwd)
+
     # start sessions
     botarray.start_with_random_delay()
 
