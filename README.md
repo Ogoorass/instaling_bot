@@ -28,8 +28,48 @@ bot.start(delay=13)
 
 Example of more complex usage is in `main.py` file in the root direcory.
 
-https://github.com/Ogoorass/instaling_bot/blob/ca2efb2f880511d8f899f0689626c7112cee2218/main.py
+~~~python
+from instaling import Botarray, Account
+import os
+from sys import platform
 
+
+def main():
+
+    # for different systems
+    HOME = os.environ["HOME"] + "/" if platform in ["linux", "linux2"] else ""
+
+    # load accounts from the file
+    accounts = []
+    try:
+        with open(f"{HOME}accounts.txt", "r") as f:
+            for line in f:
+                try:
+                    login, passwd = line.strip("\n").split()
+                except ValueError:
+                    print('Bad format of "accounts.txt"!')
+                    exit(1)
+                accounts.append(Account(login=login, passwd=passwd))
+    except FileNotFoundError:
+        print("Lack of account file!")
+        exit(1)
+
+    # setup botarray
+    botarray = Botarray(
+        path_to_logfile=f"{HOME}log.txt", path_to_words_json=f"{HOME}words.json"
+    )
+
+    # fill botarray
+    for account in accounts:
+        botarray.append(login=account.login, passwd=account.passwd)
+
+    # start sessions
+    botarray.start_with_random_delay()
+
+
+if __name__ == "__main__":
+    main()
+~~~
 The `Botarray` class is used to easily run Instaling sessions in bulk.
 
 Same as in `Bot`, `path_to_words_json`, `path_to_logfile` and `isSpeedrun` may be provided to the `Botarray` constructor. The `append` method is used to add user accounts to the array. By calling the `start_with_random_delay` method, all elements of the botarray are simultaneously run and waited for, but each of them starts executing with a random delay. By default it is 0 to 60 minutes, but you can specify `dmin` and `dmax`.
