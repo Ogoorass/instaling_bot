@@ -1,5 +1,6 @@
 from .error import BadStudentIdUrlError
 
+
 # przykładowy url: "https://instaling.pl/student/pages/mainPage.php?student_id=1245553"
 # jeżeli z jakiegoś powodu będzie inna ilość argumentów to ma pokazać błąd
 def extract_student_id_from_url(url) -> str:

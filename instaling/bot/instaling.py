@@ -51,7 +51,6 @@ class Instaling:
         return usage_example
 
     def send_answer(self, answer) -> Answer:
-
         # send answer
         answer_request = self.session.post(
             Url.answer,

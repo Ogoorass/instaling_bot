@@ -79,7 +79,6 @@ class Bot:
 
     # start instaling session
     def start(self, delay=0):  # minutes to delay executing the session
-
         self.logger.info(f"delaying {delay} minutes")
         sleep(delay * 60)  # minutes to seconds convertion
 
@@ -89,7 +88,6 @@ class Bot:
 
         # iteracja przez sesje
         while True:
-
             # request for next word
             try:
                 usage_example = self.instaling.generate_next_word()
@@ -111,7 +109,6 @@ class Bot:
 
             # check if word is known
             if usage_example in self.words:
-
                 self.logger.debug(
                     f"usage example is known, answer - '{self.words.get(usage_example)}'"
                 )
@@ -130,7 +127,6 @@ class Bot:
                     self.logger.warning(f"Bad answer in json")
                     raise BadAnswerError
             else:
-
                 self.logger.debug("usage example is not known")
                 # if not known - send 💀 and save answer
                 try:
